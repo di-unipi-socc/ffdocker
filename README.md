@@ -65,15 +65,21 @@ Build the `ffdocker` image locally looking the `Dockerfile`in the current folder
 docker build -t ffdocker .
 ```
 #### Run an image
-The `docker run` command run a container starting from the previously created `ffdocker` image.
+The `docker run` command run a container `test` starting from the previously created `ffdocker` image.
 
 ```
-docker run ffdocker
+docker run -ti --rm --cpuset-cpus=0 --name test ffdocker
 ```
-
-## Run the image from Docker Hub
 If you want to run the image without build it, you can pull and run the image present into [Docker Hub](https://hub.docker.com/r/diunipisocc/ffdocker/)
 
 ```
-docker run diunipisocc/ffdocker
+docker run -ti --rm --cpuset-cpus=0 --name test diunipisocc/ffdocker
 ```
+
+#### Update the CPU assigned
+Update the CPu assigned to the running container.
+It assigns the CPU number 0 and 2 to the container `test`.
+```
+docker update --cpuset-cpus=0,2 test  
+```
+
