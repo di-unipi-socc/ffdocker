@@ -51,18 +51,29 @@ processor	: 3
 
 
 ## Experiment with FastFlow
+In order to run a fastFlow program.
+- Compile the ff program and produces the executable within the main folder.
+- Change the `test_parfor_unbalanced` name with the new created executable.
+- Build the image (see below)
+- Run the image (see below)
 
-Compile the file and produces the executable file within the local folder.
+#### Build an image
 
-#### Build the image
-Build the `ffdocker` image locally looking the `Dockerfile`in the current folder.
+Build the `ffdocker` image locally looking the `Dockerfile`in the current folder (assuming the executable `test_parfor_unbalanced` is present in the current folder)
 
 ```
 docker build -t ffdocker .
 ```
-
-How to run the image.
+#### Run an image
+The `docker run` command run a container starting from the previously created `ffdocker` image.
 
 ```
 docker run ffdocker
+```
+
+## Run the image from Docker Hub
+If you want to run the image without build it, you can pull and run the image present into [Docker Hub](https://hub.docker.com/r/diunipisocc/ffdocker/)
+
+```
+docker run diunipisocc/ffdocker
 ```
