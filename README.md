@@ -1,5 +1,5 @@
 
-## FastFlow in Fog infrastructure with Docker
+## FastFlow and Fog infrastructure (with Docker)
 ##### 20 febbraio 2017
 We are investigating the possibility to execute FastFlow (FF) programs in Docker containers.
 
