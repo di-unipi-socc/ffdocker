@@ -108,12 +108,11 @@ docker run -v /tmp:/tmp ffc
 
 Start the fastflow container (with the socker client inside)
 ```
-docker run -v /tmp/ffsocket:/tmp/ffsocket ff
+docker run  --rm --name ff -v /tmp/ffsocket:/tmp/ffsocket ff
 ```
 
 ## AppController and Docker angine communication
 Run the appController with the docker client communicating with the docker daemon.
 ```
 docker run -v /tmp/:/tmp/ -v /var/run/docker.sock:/var/run/docker.sock ffc
-
 ```
