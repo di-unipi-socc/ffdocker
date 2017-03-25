@@ -9,6 +9,9 @@ WORKDIR /code
 # copy the fastflow executable inside the image
 #COPY test_parfor_unbalanced /code/
 COPY socket_server.py /code/
+COPY requirements.py /code/
+
+RUN pip install -r requirements.py
 
 # when the container starts it runs the executable in the entrypoint
 #ENTRYPOINT ["python","/code/test_parfor_unbalance"]

@@ -1,7 +1,12 @@
 # Echo server program
 #import socket,os
 import os
+import docker
 from socket import *
+
+client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+
+print(client.images.list())
 
 s = socket(AF_UNIX, SOCK_STREAM)
 s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)

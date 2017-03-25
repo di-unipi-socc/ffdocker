@@ -83,7 +83,7 @@ It assigns the CPU number 0 and 2 to the container `test`.
 docker update --cpuset-cpus=0,2 test  
 ```
 
-## Socker file communication
+## Socket file communication
 The scenario is:
 - a container running a fast flow program (client socket)
 - a container running the application controller (server socket)
@@ -109,4 +109,11 @@ docker run -v /tmp:/tmp ffc
 Start the fastflow container (with the socker client inside)
 ```
 docker run -v /tmp/ffsocket:/tmp/ffsocket ff
+```
+
+## AppController and Docker angine communication
+Run the appController with the docker client communicating with the docker daemon.
+```
+docker run -v /tmp/:/tmp/ -v /var/run/docker.sock:/var/run/docker.sock ffc
+
 ```
