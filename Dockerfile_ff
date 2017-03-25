@@ -1,4 +1,4 @@
-FROM ubuntu
+FROM python:3.5-alpine
 
 # create the folder code inside the docker image
 RUN mkdir /code
@@ -7,7 +7,9 @@ RUN mkdir /code
 WORKDIR /code
 
 # copy the fastflow executable inside the image
-COPY test_parfor_unbalanced /code/
+#COPY test_parfor_unbalanced /code/
+COPY socket_client.py /code/
 
 # when the container starts it runs the executable in the entrypoint
-ENTRYPOINT ["/code/test_parfor_unbalanced"]
+#ENTRYPOINT ["python","/code/test_parfor_unbalance"]
+ENTRYPOINT ["python","/code/socket_client.py"]

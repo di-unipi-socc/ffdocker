@@ -83,3 +83,30 @@ It assigns the CPU number 0 and 2 to the container `test`.
 docker update --cpuset-cpus=0,2 test  
 ```
 
+## Socker file communication
+The scenario is:
+- a container running a fast flow program (client socket)
+- a container running the application controller (server socket)
+
+The socket is a file in the host directory `/tmp` that is mounted by  both the containers.
+
+
+Build the fastflow container:
+```
+docker build -t ff -f Dockerfile_ff .
+```
+
+Build the (app-)controller container:
+```
+docker build -t ffc -f Dockerfile_controller .
+```
+Run the appController in a Docker container
+
+```
+docker run -v /tmp:/tmp ffc    
+```
+
+Start the fastflow container (with the socker client inside)
+```
+docker run -v /tmp/ffsocket:/tmp/ffsocket ff
+```
