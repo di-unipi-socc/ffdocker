@@ -7,6 +7,42 @@ There are two main aspects that we want to achieve:
 - **elasticity**:  the resources (CPU, Memory) needed by FF programs can change over time (e.g. increasing the number of workers in a farm). It is possible to dynamically allocate resources associated to a Docker container running a FF program ?
 - **multi-tenant**: if two FF programs are executed on the same host they can reduce or impact the overall performance because each program gains (in a greedy way) as much as possible the available resource. It is possible to run FF program in isolated Docker containers in such a way the don't interfere with each others ?
 
+
+## Socket file communication
+The scenario is:
+- a container running a fast flow program (client socket)
+- a container running the application controller (server socket)
+
+The socket is a file in the host directory `/tmp` that is mounted by  both the containers.
+
+Build the images with *docker-compose*
+```
+docker-compose build
+```
+
+
+Build the *appparallel* image:
+```
+docker build -t appparallel -f Dockerfile-app.
+```
+
+Build the *(node)controller* image:
+```
+docker build -t nodecontroller -f Dockerfile-controller .
+```
+Run the *nodeController* in a Docker container:
+
+```
+docker run -v /tmp:/tmp  /var/run/docker.sock:/var/run/docker.sock nodecontroller
+```
+
+Run the *appparallel* container
+```
+docker run  --rm --name app -v /tmp/ffsocket:/tmp/ffsocket appparallel
+```
+
+
+
 ### Elasticity - Thread-affinity
 Docker is able to guarantee *thread-affinity* in order to authorize a given application to access only some CPUs ( via `--cpuset-cpus` command).
 
@@ -81,38 +117,4 @@ Update the CPu assigned to the running container.
 It assigns the CPU number 0 and 2 to the container `test`.
 ```
 docker update --cpuset-cpus=0,2 test  
-```
-
-## Socket file communication
-The scenario is:
-- a container running a fast flow program (client socket)
-- a container running the application controller (server socket)
-
-The socket is a file in the host directory `/tmp` that is mounted by  both the containers.
-
-
-Build the fastflow container:
-```
-docker build -t ff -f Dockerfile_ff .
-```
-
-Build the (app-)controller container:
-```
-docker build -t ffc -f Dockerfile_controller .
-```
-Run the appController in a Docker container
-
-```
-docker run -v /tmp:/tmp ffc    
-```
-
-Start the fastflow container (with the socker client inside)
-```
-docker run  --rm --name ff -v /tmp/ffsocket:/tmp/ffsocket ff
-```
-
-## AppController and Docker angine communication
-Run the appController with the docker client communicating with the docker daemon.
-```
-docker run -v /tmp/:/tmp/ -v /var/run/docker.sock:/var/run/docker.sock ffc
 ```
