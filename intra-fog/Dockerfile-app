@@ -6,14 +6,14 @@ RUN mkdir /code
 # set the working directory inside the image
 WORKDIR /code
 
-# copy the fastflow executable inside the image
-#COPY test_parfor_unbalanced /code/
-COPY nodecontroller.py /code/
+# copy the code of the parallel application inside the container.
+COPY app.py /code/
+
+COPY cpuburn /
 
 COPY requirements.txt /code/
 
 RUN pip install -r requirements.txt
 
 # when the container starts it runs the executable in the entrypoint
-
-ENTRYPOINT ["python","/code/nodecontroller.py"]
+ENTRYPOINT ["python","-u", "/code/app.py"]

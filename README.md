@@ -1,27 +1,40 @@
 
-## FastFlow and Fog infrastructure (with Docker)
-##### 20 febbraio 2017
-We are investigating the possibility to execute FastFlow (FF) programs in Docker containers.
+## An Architecture to Support Autonomic Data Stream Processing Applications in the Fog
 
-There are two main aspects that we want to achieve:
-- **elasticity**:  the resources (CPU, Memory) needed by FF programs can change over time (e.g. increasing the number of workers in a farm). It is possible to dynamically allocate resources associated to a Docker container running a FF program ?
-- **multi-tenant**: if two FF programs are executed on the same host they can reduce or impact the overall performance because each program gains (in a greedy way) as much as possible the available resource. It is possible to run FF program in isolated Docker containers in such a way the don't interfere with each others ?
+The high-level architecture for supporting autonomic data
+stream parallel applications in the fog is shown below composed by the following components:
+ - **Fog Nodes (FNs)**: are devices (e.g., smartphones, laptops, routers) where the containerized Stream parallel Application are executed,
+ - **Fog Node Controllers (FNCs)**: (containerized) component used for  scaling up/down the resources (CPU, memory) utilized by the applications,
+ - **Autonomic applications (Apps)**: parallel stream application,
+ - **Autonomic application Controllers (AppCs)**: autonomic logic inside the application responsible to control the parallel application.
 
 
-## Socket file communication
-The scenario is:
-- a container running a fast flow program (client socket)
-- a container running the application controller (server socket)
+<p align="center">
+<img src="./fig/architecture.png" width="600">
+</p>
+
+## Preliminary results
+In this section we illustrate how Docker can be used to manage the resources in a *FN* (*intra-fog* scenario) and to migrate containerized *Apps* across different *FNs* (*inter-fog* scenario).
+
+## Intra-fog node resources management and communication
+As we anticipated, both the *FNC* and *App* (with their own *Appc*) are shipped in Docker containers.
+In this experiment we tested both the *intra-fog* communication between *FNC* and *App* and the *FNC* resources assignement (i.e., increase/decrease the CPUs assigned to a container) to a single parallel *App*.
+
+The experiment is composed by the following part:
+  -
+
+
+### Limit a container's resources in a Fog Node
+[Docker Docs](https://docs.docker.com/engine/admin/resource_constraints/)
+
+We test a simple scenario in which in a *FN* it is running a single *App* equipped with its *AppC*. The
+- A Parallel **App** (with a simple *AppC*) running in a  Docker container
+- **FNC** running in a container
 
 The socket is a file in the host directory `/tmp` that is mounted by  both the containers.
 
-Build the images with *docker-compose*
-```
-docker-compose build
-```
 
-
-Build the *appparallel* image:
+Build the *appParallel* image:
 ```
 docker build -t appparallel -f Dockerfile-app.
 ```
@@ -41,20 +54,8 @@ Run the *appparallel* container
 docker run  --rm --name app -v /tmp/ffsocket:/tmp/ffsocket appparallel
 ```
 
-## Docker migration with socket
-
-`docker build -t sclient -f Dockerfile-sclient .`
-
-`docker run -v /tmp:/tmp sclient `
-
-`docker build -t sserver -f Dockerfile-sserver .`
-
-`docker run -v /tmp:/tmp sserver`
-
-
-
-### Elasticity - Thread-affinity
-Docker is able to guarantee *thread-affinity* in order to authorize a given application to access only some CPUs ( via `--cpuset-cpus` command).
+### Docker CPU affinity
+On one hand we used *thread affinity* in the application in order to bind some thread to a given CPU, and on the other hand we used docker to authorize a given application to access only some CPUs (via `--cpuset-cpus` command).
 
 The image `agileek/cpuset-test` runs the [cpuburn](https://patrickmn.com/projects/cpuburn/) script for loading the  CPUs of the host.
 
@@ -66,7 +67,6 @@ Docker provides also the possibility to  change the assigned CPU for a container
 The `update` command changes the assigned CPUs for the container when it is running.
 
 `docker update --cpuset-cpus=0,2 test`
-
 
 The `--cpuset-cpus` option assigns a specific number of CPUs to a container.  In the test below, the single CPU  `2` is assigned to the `ubuntu` container
 but looking into the `proc/cpuinfo `  all the `4` processors of the host are returned.
@@ -83,6 +83,23 @@ processor	: 1
 processor	: 2
 processor	: 3
 ```
+
+## Inter-fog node migration
+We test the possibility to migrate an *Application (App)* across different *Fog Node (FN)* with Docker.
+
+## Docker migration with socket
+
+`docker build -t sclient -f Dockerfile-sclient .`
+
+`docker run -v /tmp:/tmp sclient `
+
+`docker build -t sserver -f Dockerfile-sserver .`
+
+`docker run -v /tmp:/tmp sserver`
+
+
+
+
 
 
 ### Conclusion
@@ -128,3 +145,11 @@ It assigns the CPU number 0 and 2 to the container `test`.
 ```
 docker update --cpuset-cpus=0,2 test  
 ```
+
+
+### FastFLow and fog
+We are investigating the possibility to execute FastFlow (FF) programs in Docker containers.
+
+There are two main aspects that we want to achieve:
+- **elasticity**:  the resources (CPU, Memory) needed by FF programs can change over time (e.g. increasing the number of workers in a farm). It is possible to dynamically allocate resources associated to a Docker container running a FF program ?
+- **multi-tenant**: if two FF programs are executed on the same host they can reduce or impact the overall performance because each program gains (in a greedy way) as much as possible the available resource. It is possible to run FF program in isolated Docker containers in such a way the don't interfere with each others ?
