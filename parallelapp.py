@@ -10,6 +10,7 @@ snode = "/tmp/ffsocket.sock"
 
 def f(x):
     while True:
+        time.sleep(1)
         x*x
 
 def stress():

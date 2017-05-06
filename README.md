@@ -41,6 +41,16 @@ Run the *appparallel* container
 docker run  --rm --name app -v /tmp/ffsocket:/tmp/ffsocket appparallel
 ```
 
+## Docker migration with socket
+
+`docker build -t sclient -f Dockerfile-sclient .`
+
+`docker run -v /tmp:/tmp sclient `
+
+`docker build -t sserver -f Dockerfile-sserver .`
+
+`docker run -v /tmp:/tmp sserver`
+
 
 
 ### Elasticity - Thread-affinity

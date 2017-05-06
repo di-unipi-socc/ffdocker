@@ -21,6 +21,8 @@ def run(snode):
         print(str(OSError))
         pass
     s.bind(snode)
+    for d in client.events(decode=True, filters={"Action":"update"}):
+        print(d)
 
     while 1:
         print("Listen on socket: {0}".format(snode))
@@ -43,6 +45,8 @@ def run(snode):
         except docker.errors.APIError as a:
             print(str(a))
             pass
+
+
         conn.send(pickle.dumps({"msg":"ok"}))
     conn.close()
 
