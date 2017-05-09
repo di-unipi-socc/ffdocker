@@ -2,8 +2,9 @@
 import socket
 import time
 import sys
+import pickle
 
-HOST = 'localhost'   # Symbolic name, meaning all available interfaces
+HOST = 'sserver'   # Symbolic name, meaning all available interfaces
 PORT = 8888
 
 
@@ -11,14 +12,22 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((HOST, PORT))
 print("Connected to {0}{1}".format(HOST,PORT))
 #time.sleep(2)
-i = 0
-while True:
+state = 0
+while state < 30:
     try:
-        s.send(bytes(str(i),"utf-8"))#str(i),"UTF8"))
-        print('Send: {0} '.format(str(i)))
-        resp = s.recv(1024)
+        d = {"state":state}
+        s.send(pickle.dumps(d))
         time.sleep(1)
-        i += 1
+        print("sent{0} ".format(d))
+        resp = pickle.loads(s.recv(1024))
+        print("Client - received {0}".format(resp))
+        if resp['action'] == "migrate":
+            print("Client - Perform action for migrating...")
+            time.sleep(2)
+            s.send(pickle.dumps({"migrate":"yes"}))
+            time.sleep(60)
+            break
+        state += 1
     except socket.error:
         s.close()
         print("Socket closed")
@@ -27,3 +36,6 @@ while True:
         s.close()
         print ("Socket closed")
         sys.exit()
+print("exit from while ")
+d = {"state":state}
+s.send(pickle.dumps(d))

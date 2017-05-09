@@ -1,7 +1,13 @@
 FROM python:3.5-alpine
 
+# create the folder code inside the docker image
+RUN mkdir /code
+
+# set the working directory inside the image
+WORKDIR /code
+
 # copy the code of the parallel application inside the container.
-COPY socket_client.py /
+#COPY socket_client_inet.py /
 
 # when the container starts it runs the executable in the entrypoint
-ENTRYPOINT ["python","-u","/socket_client.py"]
+ENTRYPOINT ["python","-u","/code/socket_client_inet.py"]
