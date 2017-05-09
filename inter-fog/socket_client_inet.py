@@ -13,7 +13,7 @@ s.connect((HOST, PORT))
 print("Connected to {0}{1}".format(HOST,PORT))
 #time.sleep(2)
 state = 0
-while state < 30:
+while state < 20:
     try:
         d = {"state":state}
         s.send(pickle.dumps(d))
@@ -23,10 +23,8 @@ while state < 30:
         print("Client - received {0}".format(resp))
         if resp['action'] == "migrate":
             print("Client - Perform action for migrating...")
-            time.sleep(2)
             s.send(pickle.dumps({"migrate":"yes"}))
             time.sleep(60)
-            break
         state += 1
     except socket.error:
         s.close()
@@ -36,6 +34,3 @@ while state < 30:
         s.close()
         print ("Socket closed")
         sys.exit()
-print("exit from while ")
-d = {"state":state}
-s.send(pickle.dumps(d))
