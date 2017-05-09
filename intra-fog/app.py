@@ -2,44 +2,43 @@
 import socket
 import time
 import pickle
-import click
 import subprocess
 from multiprocessing import Pool
 from multiprocessing import cpu_count
 
 snode = "/tmp/ffsocket.sock"
 
-# def f(x):
-#     while True:
-#         #time.sleep(2)
-#         x*x
-#
-# def stress(num_cpu):
-#     #processes = cpu_count()
-#     pool = Pool(num_cpu)
-#     print ('Utilizing {} cores\n'.format(num_cpu))
-#     pool.map(f, range(num_cpu))
-
-
+time_burn = 5
 s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 s.connect(snode)
 
 cid = socket.gethostname()
-print("{0} - Application is running on container ....".format(cid))
+print("App - is running on container {0}....".format(cid))
 
-# run the stress function
-cpus = cpu_count() # numberof cpus of the host machine
-
-p = subprocess.Popen(["/cpuburn", "-n", str(cpus)])
-print("{0} - Burning {1} cores".format(cid, cpus))
-
-time.sleep(5)
-data = {"id": cid, "op": "increase"}
-print("{0} - Sends :{1}".format(cid, data))
+# handshake with the FNC, asks the number of core to burn
+data = {"id": cid, "op": "setup", "actual":0}
+print("App:{0} - Send request {1}".format(cid, data))
 s.send(pickle.dumps(data))
 resp = pickle.loads(s.recv(1024))
-print('{0} - Received {1} '.format(cid, resp))
+print('App:{0} - Receive response {1} '.format(cid, resp))
+cpus = resp['cpus']
+
+
+# try to burn all the cores (while the fnc has setted only a subset of cores)
+process = subprocess.Popen(["/cpuburn"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)#, "-n", str(cpus)])
+print("App:{0} - Burning {1}  cores for {2} secs".format(cid, cpus, time_burn))
+
+time.sleep(time_burn)
+
+# aks more cores
+data = {"id": cid, "op": "increase", "actual": str(cpus)}
+print("App:{0} - Send request {1}".format(cid, data))
+s.send(pickle.dumps(data))
+resp = pickle.loads(s.recv(1024))
+print('App:{0} - Receive response {1} '.format(cid, resp))
+print("App:{0} - Burning {1} cores for {2} secs".format(cid, resp['cpus'], time_burn))
+
+
+time.sleep(time_burn)
 s.close()
-
-
-time.sleep(10)
+process.kill()

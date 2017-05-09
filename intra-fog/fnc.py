@@ -6,6 +6,7 @@ import click
 import sys
 import pickle
 from socket import *
+from multiprocessing import cpu_count
 
 client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
@@ -28,21 +29,28 @@ def run(snode):
     print("FNC - Listen on socket: {0}".format(snode))
     s.listen(1)
 
+    n_cpus = cpu_count() # total number of CPUs on the host
+    conn, addr = s.accept()
     while True:
         print("FNC - Waiting for connection...")
-        conn, addr = s.accept()
+
         try:
             print("FNC - Accepted connection")
             data = pickle.loads(conn.recv(1024))
-            # if not data:
-            #     break
-            print("FNC - Received :{0}".format(data))
+            print("FNC - Received: {0}".format(data))
+            cid = data["id"]
+            assigned_cpu = 0
+            if data['op'] == "setup":
+                assigned_cpu = n_cpus -2  # assign 2 cpus (4-2)
+            elif data['op'] =="increase":
+                actual_cpus = data['actual']
+                assigned_cpu = n_cpus  #- actual_cpus # assigned all the cpus
             try:
-                cid = data["id"]
                 container = client.containers.get(cid)
-                container.update(cpuset_cpus="0,1")
-                print("FNC - Assigned CPU {0} to container {1} ".format("0,1", cid))
-                conn.send(pickle.dumps({"msg":"ok", "cpus":"0,1"}))
+                cpus = "0-"+str(assigned_cpu-1)
+                container.update(cpuset_cpus=str(cpus))
+                print("FNC - Assigned CPU {0} to container {1} ".format(cpus, cid))
+                conn.send(pickle.dumps({"msg":"ok", "cpus":cpus}))
             except docker.errors.NotFound as n:
                 print (str(n))
                 pass
@@ -53,7 +61,7 @@ def run(snode):
             conn.close()
             print ("FNC - Connection closed")
             sys.exit()
-        conn.close()
+    conn.close()
 
 if __name__ == '__main__':
     run()
