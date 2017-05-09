@@ -38,7 +38,7 @@ def run(snode):
     print("FNC - Waiting for connection...")
     while True:
         try:
-            print("FNC - Accepted connection")
+            #print("FNC - Accepted connection")
             data = pickle.loads(conn.recv(1024))
             print("FNC - Received: {0}".format(data))
             cid = data["id"] # container ID
@@ -50,7 +50,7 @@ def run(snode):
             elif data['op'] =="decrease":
                 if actual_cpus - amount_cpus < 0:
                     assigned_cpu = 1
-                    print("FNC - Erro: {0} cpus are not available Cpus. Min cpus {1}".format(amount_cpus + actual_cpus, n_cpus))
+                    print("FNC - Error: {0} cpus are not available Cpus. Min cpus {1}".format(amount_cpus + actual_cpus, n_cpus))
                 else:
                     assigned_cpu = actual_cpus - amount_cpus
 
