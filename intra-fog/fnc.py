@@ -48,7 +48,7 @@ def run(snode):
             if data['op'] == "setup":
                 assigned_cpu = n_cpus//2  # assign help of the Available CPUs
             elif data['op'] =="decrease":
-                if actual_cpus - amount_cpus < 0:
+                if actual_cpus - amount_cpus <= 0:
                     assigned_cpu = 1
                     print("FNC - Error: {0} cpus are not available Cpus. Min cpus {1}".format(amount_cpus + actual_cpus, n_cpus))
                 else:

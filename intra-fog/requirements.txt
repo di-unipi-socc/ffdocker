@@ -1,7 +1,10 @@
 appdirs==1.4.3
+argh==0.26.2
 click==6.7
 docker==2.2.0
+docker-py==1.10.6
 docker-pycreds==0.2.1
+numpy==1.12.1
 packaging==16.8
 pyparsing==2.2.0
 requests==2.13.0

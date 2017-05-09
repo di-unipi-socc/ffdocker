@@ -1,4 +1,4 @@
-FROM python:3.5-alpine
+FROM python:3.6-onbuild
 
 # create the folder code inside the docker image
 RUN mkdir /code
@@ -7,7 +7,7 @@ RUN mkdir /code
 WORKDIR /code
 
 # copy the code of the parallel application inside the container.
-COPY app.py /code/
+#COPY app.py /code/
 
 COPY cpuburn /
 
