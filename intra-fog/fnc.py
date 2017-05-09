@@ -35,40 +35,44 @@ def run(snode):
 
     n_cpus = cpu_count() # total number of CPUs on the host
     conn, addr = s.accept()
+    print("FNC - Waiting for connection...")
     while True:
-        print("FNC - Waiting for connection...")
-
         try:
             print("FNC - Accepted connection")
             data = pickle.loads(conn.recv(1024))
             print("FNC - Received: {0}".format(data))
-            cid = data["id"]
+            cid = data["id"] # container ID
             assigned_cpu = 0
+            actual_cpus = data['actual']
+            amount_cpus = data['amount']
             if data['op'] == "setup":
-                assigned_cpu = n_cpus -2  # assign 2 cpus (4-2)
+                assigned_cpu = n_cpus//2  # assign help of the Available CPUs
+            elif data['op'] =="decrease":
+                if actual_cpus - amount_cpus < 0:
+                    assigned_cpu = 1
+                    print("FNC - Erro: {0} cpus are not available Cpus. Min cpus {1}".format(amount_cpus + actual_cpus, n_cpus))
+                else:
+                    assigned_cpu = actual_cpus - amount_cpus
+
             elif data['op'] =="increase":
-                actual_cpus = data['actual']
-                assigned_cpu = n_cpus  #- actual_cpus # assigned all the cpus
+                if(amount_cpus + actual_cpus > n_cpus):
+                    assigned_cpu = n_cpus               # assigned all the CPUs
+                    print("FNC - Error: {0} cpus are not available Cpus. Max cpus {1}".format(amount_cpus + actual_cpus, n_cpus))
+                else:
+                    assigned_cpu = amount_cpus + actual_cpus
             try:
                 container = client.containers.get(cid)
                 cpus = "0-"+str(assigned_cpu-1)
 
                 thread = threading.Thread(target=async_update, args=(container,cpus))
-                #thread.daemon = True  # Daemonize thread
                 thread.start()
 
                 for d in client.events(decode=True, filters={"container":cid}):
                     if d['Action'] =="update":
                         break
-                print("update done")
-            # {'Action': 'update', 'status': 'update', 'time': 1494320263,
-            # 'Actor': {'ID': '4caac1ef4d98895d4c6e32e93bb53a36769ab96b5a8e6f6094ddea2803c6a04f',
-            # 'Attributes': {'image': 'diunipisocc/app', 'name': 'app'}}, 'timeNano': 1494320263468258516,
-            # 'Type': 'container', 'id': '4caac1ef4d98895d4c6e32e93bb53a36769ab96b5a8e6f6094ddea2803c6a04f',
-            # 'from': 'diunipisocc/app'}
 
-                print("FNC - Assigned CPU {0} to container {1} ".format(cpus, cid))
-                conn.send(pickle.dumps({"msg":"ok", "cpus":cpus}))
+                print("FNC - Assigned {0} CPU  to container {1} ".format(assigned_cpu, cid))
+                conn.send(pickle.dumps({"msg":"ok", "cpus":assigned_cpu}))
             except docker.errors.NotFound as n:
                 print (str(n))
                 pass
