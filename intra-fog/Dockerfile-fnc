@@ -1,4 +1,4 @@
-FROM python:3.5
+FROM python:3.5-alpine
 
 # create the folder code inside the docker image
 RUN mkdir /code

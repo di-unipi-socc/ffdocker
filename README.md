@@ -23,6 +23,7 @@ In this experiment we tested both the *intra-fog* communication between *FNC* an
 The experiment is composed by the following part:
   -
 
+`docker run --rm --name fnc -v $(pwd):/code -v /tmp/:/tmp/ -v /var/run/docker.sock:/var/run/docker.sock diunipisocc/fnc `
 
 ### Limit a container's resources in a Fog Node
 [Docker Docs](https://docs.docker.com/engine/admin/resource_constraints/)
