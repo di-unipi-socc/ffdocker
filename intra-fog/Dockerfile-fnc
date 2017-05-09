@@ -6,9 +6,9 @@ RUN mkdir /code
 # set the working directory inside the image
 WORKDIR /code
 
-COPY fnc.py /code/
+#COPY fnc.py /code/
 
-COPY requirements.txt /code/
+#COPY requirements.txt /code/
 
 RUN pip install -r requirements.txt
 

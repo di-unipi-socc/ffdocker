@@ -7,8 +7,12 @@ import sys
 import pickle
 from socket import *
 from multiprocessing import cpu_count
+import threading
 
 client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+
+def async_update(container, cpus):
+    container.update(cpuset_cpus=cpus)
 
 @click.command()
 @click.option('--snode', default="/tmp/ffsocket.sock", help='Path of the socket file to communicate with the node controller')
@@ -48,7 +52,21 @@ def run(snode):
             try:
                 container = client.containers.get(cid)
                 cpus = "0-"+str(assigned_cpu-1)
-                container.update(cpuset_cpus=str(cpus))
+
+                thread = threading.Thread(target=async_update, args=(container,cpus))
+                #thread.daemon = True  # Daemonize thread
+                thread.start()
+
+                for d in client.events(decode=True, filters={"container":cid}):
+                    if d['Action'] =="update":
+                        break
+                print("update done")
+            # {'Action': 'update', 'status': 'update', 'time': 1494320263,
+            # 'Actor': {'ID': '4caac1ef4d98895d4c6e32e93bb53a36769ab96b5a8e6f6094ddea2803c6a04f',
+            # 'Attributes': {'image': 'diunipisocc/app', 'name': 'app'}}, 'timeNano': 1494320263468258516,
+            # 'Type': 'container', 'id': '4caac1ef4d98895d4c6e32e93bb53a36769ab96b5a8e6f6094ddea2803c6a04f',
+            # 'from': 'diunipisocc/app'}
+
                 print("FNC - Assigned CPU {0} to container {1} ".format(cpus, cid))
                 conn.send(pickle.dumps({"msg":"ok", "cpus":cpus}))
             except docker.errors.NotFound as n:
@@ -62,6 +80,7 @@ def run(snode):
             print ("FNC - Connection closed")
             sys.exit()
     conn.close()
+
 
 if __name__ == '__main__':
     run()
