@@ -3,31 +3,47 @@ import socket
 import time
 import os
 import sys
+import pickle
+import subprocess
 
-snode = "/tmp/ffsocket1.sock"
 
+HOST = ''   # Symbolic name, meaning all available interfaces
+PORT = 8888 # Arbitrary non-privileged port
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+#Bind socket to local host and port
 try:
-    if os.path.exists(snode):
-        os.remove(snode)
-except OSError as e:
-    print(e)
+    s.bind((HOST, PORT))
+    print("FNC - bind on {0}:{1}".format(HOST,PORT))
+except socket.error as msg:
+    print ('Bind failed. Error Code : ' + str(msg[0]) + ' Message ' + msg[1])
     sys.exit()
-
-s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-
-s.bind(snode)
-print("Listen on socket: {0}".format(snode))
 s.listen(1)
 
-#wait to accept a connection - blocking call
+print("FNC - Accepted connection ...")
 conn, addr = s.accept()
-print("Accepted connection")
 
 while True:
+    # wait to accept a connection - blocking call
     try:
-        data = conn.recv(1024)
-        print("Received: {0}".format(data.decode("utf-8")))
-        conn.send(data)
+        data = pickle.loads(conn.recv(1024))
+        print("FNC - Received: {0}".format(data))
+        if data['state'] == 5:
+            conn.send(pickle.dumps({"action":"migrate"}))
+            data = pickle.loads(conn.recv(1024))
+            if data["migrate"] == "yes":
+                cid = data['id']
+                print("FNC - Migrating Container {0}".format(cid))
+                #p = subprocess.run(["/usr/bin/docker", "checkpoint", str(cid),"ckclient"], stdout=subprocess.PIPE)
+                print("FNC - Create a checkpoint with the command: \n\t docker checkpoint create {0} ckclient ".format(cid))
+                time.sleep(3)
+                print("FNC - Restore the checkpoint with the command: \n\t docker start --checkpoint ckclient sclient ")
+                time.sleep(3)
+
+        else:
+            conn.send(pickle.dumps({"action":"nothing"}))
+
     except KeyboardInterrupt:
         conn.close()
         print ("Connection closed")
