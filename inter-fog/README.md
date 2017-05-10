@@ -1,9 +1,16 @@
 
 ## Live migration with (INET) Socket
-IN order to run the `checkpoint` command the `experimental` docker daemon shoul be enabled.
+IN order to run the `checkpoint` command the `experimental` docker daemon should be enabled.
 
 Create a network
 `docker network create fognode`
+
+## Development mode 
+Build image with `dev` Dockerfile-sserver
+
+`docker build -t diunipisocc/sclient -f Dockerfile-sclient-dev .`
+
+`docker build -t diunipisocc/sserver -f Dockerfile-sserver-dev .`
 
 Run the server side:
 
