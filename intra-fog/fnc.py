@@ -10,6 +10,7 @@ from multiprocessing import cpu_count
 import threading
 
 client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+#client = docker.APIClient(base_url='unix://var/run/docker.sock')
 
 def async_update(container, cpus):
     container.update(cpuset_cpus=cpus)
@@ -34,6 +35,7 @@ def run(snode):
     s.listen(1)
 
     n_cpus = cpu_count() # total number of CPUs on the host
+    print("FNC - Total number of available CPUs {0}".format(n_cpus))
     conn, addr = s.accept()
     print("FNC - Waiting for connection...")
     while True:
@@ -47,6 +49,7 @@ def run(snode):
             amount_cpus = data['amount']
             if data['op'] == "setup":
                 assigned_cpu = n_cpus//2  # assign help of the Available CPUs
+                print("FNC - Init setup  {0}  cpus".format(assigned_cpu))
             elif data['op'] =="decrease":
                 if actual_cpus - amount_cpus <= 0:
                     assigned_cpu = 1
@@ -69,6 +72,7 @@ def run(snode):
 
                 for d in client.events(decode=True, filters={"container":cid}):
                     if d['Action'] =="update":
+                        #print("FNC - update {0} CPU  to container {1} ".format(cpus, cid))
                         break
 
                 print("FNC - Assigned {0} CPU  to container {1} ".format(assigned_cpu, cid))

@@ -13,13 +13,15 @@ from multiprocessing import cpu_count
 @click.command()
 @click.option('--snode', default="/tmp/ffsocket.sock", help='Path of the socket file to communicate with the fog node controller')
 @click.option('--tburn',default=2, help="Time for a single burn.")
-def run(snode,tburn):
+@click.option('--range-cpus',default=4, help="Max range of CPus to be required to the FNC")
+@click.option('--repeat',default=2, help="Number of total requests sent to the FNC.")
+def run(snode,tburn,range_cpus, repeat):
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     s.connect(snode)
 
-    range_cpus = 4  # max range of amount cpus tb be requested
+    range_cpus = range_cpus  # max range of amount cpus tb be requested
     time_burn = tburn  # time duration of a single burn
-    actual_cpus = 0    # numbetr of cpus actually used by the appliocation
+    actual_cpus = 0  # numbetr of cpus actually used by the appliocation
     amount_cpus = 0   # number of cpu to increase/decrease
 
     init_time = time.clock()
@@ -30,6 +32,7 @@ def run(snode,tburn):
     print("App - is running on container {0}....".format(cid))
 
     # handshake with the FNC, asks the number of core to burn
+    amount_cpu = random.randint(1, range_cpus)
     data = {"id": cid, "op": "setup", "actual":actual_cpus, "amount":amount_cpus}
     print("App - Send request {1}".format(cid, data))
     s.send(pickle.dumps(data))
@@ -46,13 +49,14 @@ def run(snode,tburn):
 
     time.sleep(time_burn)
 
-    for c in range(1,6):
-        amount_cpu = random.randrange(1, 4) # max amount of  cores to be asked
+    for c in range(1,repeat):
+        amount_cpu = random.randint(1, range_cpus) # max amount of  cores to be asked
         if random.uniform(0,1) > 0.5:
             data = {"id": cid, "op": "increase", "actual": actual_cpus, "amount":amount_cpu}
         else:
             data = {"id": cid, "op": "decrease", "actual": actual_cpus, "amount":amount_cpu}
         print("App - Send request {1}".format(cid, data))
+        coord_chart +="({0},{1})".format(c*time_burn, actual_cpus)
         start_time = time.clock()
         s.send(pickle.dumps(data))
         resp = pickle.loads(s.recv(1024))
@@ -68,6 +72,7 @@ def run(snode,tburn):
     s.close()
     process.kill()
     print(coord_chart)
-    print(numpy.mean(response_times))
+    print("Mean time to scale {}".format(numpy.mean(response_times)))
+    print("standard deviation time to scale {}".format(numpy.std(response_times)))
 if __name__ == '__main__':
     run()

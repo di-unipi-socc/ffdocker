@@ -1,4 +1,4 @@
-FROM python:3.5-alpine
+FROM python
 
 # create the folder code inside the docker image
 RUN mkdir /code
@@ -6,7 +6,7 @@ RUN mkdir /code
 # set the working directory inside the image
 WORKDIR /code
 
-#COPY fnc.py /code/
+COPY fnc.py /code/
 
 COPY requirements.txt /code/
 
