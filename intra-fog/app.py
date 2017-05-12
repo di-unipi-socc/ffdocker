@@ -26,13 +26,14 @@ def run(snode,tburn,range_cpus, repeat):
 
     init_time = time.clock()
     coord_chart = "(0,0)"  # coordinate per chart on latex
+    coord_requests = "(0,0)"  ## requested CPUS by the app
     response_times = []
 
     cid = socket.gethostname()
     print("App - is running on container {0}....".format(cid))
 
     # handshake with the FNC, asks the number of core to burn
-    amount_cpu = random.randint(1, range_cpus)
+    amount_cpus = random.randint(1, range_cpus)
     data = {"id": cid, "op": "setup", "actual":actual_cpus, "amount":amount_cpus}
     print("App - Send request {1}".format(cid, data))
     s.send(pickle.dumps(data))
@@ -40,7 +41,8 @@ def run(snode,tburn,range_cpus, repeat):
     print('App - Receive response {1} '.format(cid, resp))
     actual_cpus = resp['cpus']
     coord_chart +="({0},{1})".format(time.clock()-init_time, actual_cpus)
-    print(coord_chart)
+    #coord_requests+="({0},{1})".format(time.clock()-init_time, amount_cpus)
+    #print(coord_chart)
 
 
     # try to burn all the cores (while the fnc has setted only a subset of cores)
@@ -50,13 +52,18 @@ def run(snode,tburn,range_cpus, repeat):
     time.sleep(time_burn)
 
     for c in range(1,repeat):
-        amount_cpu = random.randint(1, range_cpus) # max amount of  cores to be asked
+        amount_cpus = random.randint(1, range_cpus) # max amount of  cores to be asked
         if random.uniform(0,1) > 0.5:
-            data = {"id": cid, "op": "increase", "actual": actual_cpus, "amount":amount_cpu}
+            data = {"id": cid, "op": "increase", "actual": actual_cpus, "amount":amount_cpus}
+            coord_requests+="({0},{1})".format(c*time_burn, actual_cpus+amount_cpus)
         else:
-            data = {"id": cid, "op": "decrease", "actual": actual_cpus, "amount":amount_cpu}
+            data = {"id": cid, "op": "decrease", "actual": actual_cpus, "amount":amount_cpus}
+            coord_requests+="({0},{1})".format(c*time_burn, actual_cpus-amount_cpus)
         print("App - Send request {1}".format(cid, data))
+        now = time.clock()
         coord_chart +="({0},{1})".format(c*time_burn, actual_cpus)
+        #coord_requests+="({0},{1})".format(now-init_time, actual_cpus)
+
         start_time = time.clock()
         s.send(pickle.dumps(data))
         resp = pickle.loads(s.recv(1024))
@@ -71,7 +78,10 @@ def run(snode,tburn,range_cpus, repeat):
         time.sleep(time_burn)
     s.close()
     process.kill()
+    print("Received CPU:")
     print(coord_chart)
+    print("Requested CPU:")
+    print(coord_requests)
     print("Mean time to scale {}".format(numpy.mean(response_times)))
     print("standard deviation time to scale {}".format(numpy.std(response_times)))
 if __name__ == '__main__':
