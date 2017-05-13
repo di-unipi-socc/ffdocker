@@ -5,8 +5,8 @@ import os
 import sys
 import pickle
 
-from twisted.internet import task
-from twisted.internet import reactor
+# from twisted.internet import task
+# from twisted.internet import reactor
 
 
 HOST = ''   # Symbolic name, meaning all available interfaces

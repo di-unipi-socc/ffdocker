@@ -1,30 +1,40 @@
 
-## Live migration with (INET) Socket
-IN order to run the `checkpoint` command the `experimental` docker daemon should be enabled.
+## Intra-node experiment - Live migration
+IN order to run the `checkpoint` command the `experimental` featured of the docker daemon should be enabled.
 
 Create a network
 `docker network create fognode`
 
 ## Development mode
-Build image with `dev` Dockerfile-sserver
+The images do not contain the source code of the component.
 
 `docker build -t diunipisocc/filtering -f Dockerfile-filtering-dev .`
 
 `docker build -t diunipisocc/selection -f Dockerfile-selection-dev .`
 
-Run the server side:
+`docker build -t diunipisocc/fnc -f Dockerfile-fnc-dev .`
 
-`docker run --name selection --network=fognode --rm -v $(pwd):/code  -v /tmp/ffsocket.sock:/tmp/ffsocket.sock -p 8888:8888 diunipisocc/selection`
+Run the *`fnc`*:
+`docker run --name fnc  --rm  \
+        -v $(pwd):/code  \
+        -v /usr/bin/docker:/usr/bin/docker \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        --network=fognode  \
+        diunipisocc/fnc`
 
-The client has an internal state that send to the server:
-`docker run --name filtering  --network=fognode -v $(pwd):/code  diunipisocc/filtering`
 
+Run the *`selection`*:
+`docker run --name selection \
+        --network=fognode \
+        -v $(pwd):/code  \
+        diunipisocc/selection`
 
-Create a Checkpoint of the client
-`docker checkpoint create sclient ckclient`
+Run the *`filtering`*:
+`docker run --name filtering    \
+        -v $(pwd):/code        \
+        --network=fognode        \
+        diunipisocc/filtering`
 
-Restore the client from the checkpoint
-`docker start --checkpoint ckclient sclient`
 
 
 ## Docker swarm, services and live migration

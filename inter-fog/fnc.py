@@ -46,12 +46,12 @@ class EchoHandler(asyncore.dispatcher):
                 #print("FNC - Restore the checkpoint with the command: \n\t docker start --checkpoint ckclient sclient "
                 log.debug("Creating cjheckpint")
                 #['docker ',' checkpoint ',' create ', str(cid), 'ckfiltering']
-                p= subprocess.Popen("docker checkpoint create {0} ckfiltering ".format(cid), shell=True, stdout=subprocess.PIPE)
+                p= subprocess.Popen("/usr/bin/docker checkpoint create {0} ckfiltering ".format(cid), shell=True, stdout=subprocess.PIPE)
                 for line in p.stdout:
                     print (line)
                 p.wait()
-                print (p.returncode)
-                p= subprocess.Popen("docker start --checkpoint ckfiltering filtering".format(cid), shell=True, stdout=subprocess.PIPE)
+                log.debug("returned code "+str(p.returncode))
+                p= subprocess.Popen("/usr/bin/docker start --checkpoint ckfiltering filtering".format(cid), shell=True, stdout=subprocess.PIPE)
                 for line in p.stdout:
                     print (line)
                 p.wait()
@@ -98,8 +98,9 @@ class EchoServer(asyncore.dispatcher):
     socket_type                 = socket.SOCK_STREAM
 
     def __init__(self, address, handlerClass=EchoHandler):
-        self.address            = address
+        self.address            = address #[0] if address[1]==None else address
         self.handlerClass       = handlerClass
+
 
         asyncore.dispatcher.__init__(self)
         self.create_socket(self.address_family,
@@ -113,7 +114,7 @@ class EchoServer(asyncore.dispatcher):
 
     def server_bind(self):
         self.bind(self.address)
-        log.debug("bind: address=%s:%s" % (self.address[0], self.address[1]))
+        log.debug("bind: address= {0}".format(self.address))
 
     def server_activate(self):
         self.listen(self.request_queue_size)
@@ -144,9 +145,9 @@ class EchoServer(asyncore.dispatcher):
         return True
 
     def process_request(self, conn_sock, client_address):
-        log.info("conn_made: client_address=%s:%s" % \
-                     (client_address[0],
-                      client_address[1]))
+        #log.info("conn_made: client_address=%s:%s" % \
+        #             (client_address[0],
+        #              client_address[1]))
         self.handlerClass(conn_sock, client_address, self)
 
     def handle_close(self):
@@ -155,5 +156,6 @@ class EchoServer(asyncore.dispatcher):
 if __name__ == "__main__":
      interface = "0.0.0.0"
      port = 8083
-     server = EchoServer((interface, port))
+     #interface = "/tmp/fnc.sock"
+     server = EchoServer((interface, port), handlerClass=EchoHandler)
      server.serve_forever()
