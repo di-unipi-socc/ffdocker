@@ -50,10 +50,11 @@ docker run -v /tmp:/tmp  /var/run/docker.sock:/var/run/docker.sock nodecontrolle
 
 Run the *appparallel* container
 ```
-docker run  --rm --name app -v /tmp/ffsocket:/tmp/ffsocket appparallel -->
+docker run  --rm --name app -v /tmp/ffsocket:/tmp/ffsocket appparallel
 ```
+-->
 
-### Docker CPU affinity
+<!-- ### Docker CPU affinity
 On one hand we used *thread affinity* in the application in order to bind some thread to a given CPU, and on the other hand we used docker to authorize a given application to access only some CPUs (via `--cpuset-cpus` command).
 
 The image `agileek/cpuset-test` runs the [cpuburn](https://patrickmn.com/projects/cpuburn/) script for loading the  CPUs of the host.
@@ -81,7 +82,7 @@ processor	: 0
 processor	: 1
 processor	: 2
 processor	: 3
-```
+``` -->
 
 
 <!-- ### Conclusion
@@ -125,4 +126,4 @@ docker run -ti --rm --cpuset-cpus=0 --name test diunipisocc/ffdocker
 Update the CPu assigned to the running container.
 It assigns the CPU number 0 and 2 to the container `test`.
 ```
-docker update --cpuset-cpus=0,2 test  
+docker update --cpuset-cpus=0,2 test  */

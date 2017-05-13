@@ -20,7 +20,7 @@ In this section we illustrate how Docker can be used to manage the resources in 
 - [**intra-fog**](./inter-fog) experiment
 
 
-```
+
 
 
 ### FastFLow and fog
