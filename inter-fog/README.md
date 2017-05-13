@@ -8,16 +8,16 @@ Create a network
 ## Development mode
 Build image with `dev` Dockerfile-sserver
 
-`docker build -t diunipisocc/sclient -f Dockerfile-sclient-dev .`
+`docker build -t diunipisocc/filtering -f Dockerfile-filtering-dev .`
 
-`docker build -t diunipisocc/sserver -f Dockerfile-sserver-dev .`
+`docker build -t diunipisocc/selection -f Dockerfile-selection-dev .`
 
 Run the server side:
 
-`docker run --name sserver --network=fognode --rm -v $(pwd):/code -p 8888:8888 diunipisocc/sserver`
+`docker run --name selection --network=fognode --rm -v $(pwd):/code  -v /tmp/ffsocket.sock:/tmp/ffsocket.sock -p 8888:8888 diunipisocc/selection`
 
 The client has an internal state that send to the server:
-`docker run --name sclient  --network=fognode -v $(pwd):/code  diunipisocc/sclient`
+`docker run --name filtering  --network=fognode -v $(pwd):/code  diunipisocc/filtering`
 
 
 Create a Checkpoint of the client

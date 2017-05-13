@@ -6,6 +6,9 @@ RUN mkdir /code
 # set the working directory inside the image
 WORKDIR /code
 
+# copy the code of the parallel application inside the container.
+COPY selection.py /code/selection.py
+
 
 # when the container starts it runs the executable in the entrypoint
-ENTRYPOINT ["python","-u","/code/socket_client.py"]
+ENTRYPOINT ["python","-u","/code/selection.py"]
