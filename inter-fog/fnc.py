@@ -20,13 +20,14 @@ class EchoHandler(asyncore.dispatcher):
 
         # We dont have anything to write, to start with
         self.is_writable        = True
+        self.is_readable        = False
 
         # Create ourselves, but with an already provided socket
         asyncore.dispatcher.__init__(self, conn_sock)
         log.debug("created handler; waiting for loop")
 
     def readable(self):
-        return False     # We are always happy to read
+        return self.is_readable    # We are always happy to read
 
     def writable(self):
         return self.is_writable # But we might not have
@@ -35,26 +36,30 @@ class EchoHandler(asyncore.dispatcher):
     def handle_read(self):
         log.debug("handle_read")
         data = pickle.loads(self.recv(SIZE))
-        log.debug("after recv {0}".format(data))#.decode("utf-8")))
+        log.debug("after recv ")
         if data:
-            log.debug("got data")
+            log.debug("got data {0}".format(data))
             #self.buffer += data
-            self.is_writable = True  # sth to send back now
+            self.is_readable = False  # sth to send back now
+            self.is_writable = False
         else:
             log.debug("got null data")
 
     def handle_write(self):
+        time.sleep(3)
         log.debug("handle_write")
         if self.buffer:
             sent = self.send(pickle.dumps(self.buffer))
-            log.debug("sent data")
+            log.debug("sent data {0}".format(self.buffer))
+            self.is_readable = True
+            self.is_writable = False
             #self.buffer = {}
             #self.buffer = self.buffer[sent:]
         else:
             log.debug("nothing to send")
-        if len(self.buffer) == 0:
-            self.is_writable = False
-        time.sleep(1)
+        # if len(self.buffer) == 0:
+        #     self.is_writable = False
+
 
     # Will this ever get called?  Does loop() call
     # handle_close() if we called close, to start with?
