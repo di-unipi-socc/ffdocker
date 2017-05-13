@@ -24,6 +24,7 @@ class ChFnc(asyncore.dispatcher):
         self.is_writable = False
         self.is_readable = True
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.cid = socket.gethostname()
         address = (container_name, port)
         log.info('connecting to %s', address)
         self.connect(address)
@@ -48,7 +49,7 @@ class ChFnc(asyncore.dispatcher):
         return self.is_readable
 
     def handle_write(self):
-        sent = self.send(pickle.dumps({"migrate":"ok"}))
+        sent = self.send(pickle.dumps({"id":self.cid , "migrate":"ok"}))
         log.debug('handle_write() -> ')
         self.is_readable = False
         self.is_writable = False
@@ -110,48 +111,12 @@ class ChSelection(asyncore.dispatcher):
         #self.read_buffer.write(data)
 
 if __name__== "__main__":
-    toFnc = ChFnc("127.0.0.1", 8083)
-    toSelection = ChSelection("127.0.0.1",8888)
+
+    toFnc       = ChFnc("127.0.0.1", 8083)
+    #toSelection = ChSelection("127.0.0.1",8888)
+
     try:
         asyncore.loop()
     except KeyboardInterrupt:
         print ("Filtering - Connection closed")
         asyncore.close_all()
-
-# s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# s_fnc= socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)  # socket to fnc connection
-#
-# #s_fnc.connect(snode)
-#
-# cid = socket.gethostname()
-#
-# s.connect((HOST, PORT))
-# print("Filtering - Connected to {0}:{1}".format(HOST,PORT))
-# #time.sleep(2)
-# state = 0
-# while state < 200:
-#     try:
-#         d = {"id": cid, "state":state}
-#         s.send(pickle.dumps(d))
-#         time.sleep(0.01)
-#         print("Filtering - sent {0} ".format(d))
-#         #resp = pickle.loads(s.recv(1024))
-#         #print("Filtering - received {0}".format(resp))
-#         # if resp['action'] == "migrate":
-#         #     print("App - Perform action for migrating...")
-#         #     time.sleep(2)
-#         #     d = {"id": cid, "migrate":"yes"}
-#         #     s.send(pickle.dumps(d))
-#         #     print("App - sent    {0}".format(d))
-#         #     time.sleep(10)
-#         state += 1
-#     except socket.error:
-#         s.close()
-#         print("Filtering - Socket closed")
-#         sys.exit()
-#     except KeyboardInterrupt:
-#         s.close()
-#         print ("Filtering - Socket closed")
-#         sys.exit()
-#
-# s.close()

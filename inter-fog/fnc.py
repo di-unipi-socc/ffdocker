@@ -2,6 +2,7 @@ import logging
 import asyncore
 import socket
 import pickle
+import subprocess
 import time
 #%(thread)d %(name)s
 
@@ -39,9 +40,26 @@ class EchoHandler(asyncore.dispatcher):
         log.debug("after recv ")
         if data:
             log.debug("got data {0}".format(data))
+            if data['migrate'] =='ok':
+                cid = data['id']
+                #print("FNC - Create a checkpoint with the command: \n\t docker checkpoint create {0} ckclient ".format(cid))
+                #print("FNC - Restore the checkpoint with the command: \n\t docker start --checkpoint ckclient sclient "
+                log.debug("Creating cjheckpint")
+                #['docker ',' checkpoint ',' create ', str(cid), 'ckfiltering']
+                p= subprocess.Popen("docker checkpoint create {0} ckfiltering ".format(cid), shell=True, stdout=subprocess.PIPE)
+                for line in p.stdout:
+                    print (line)
+                p.wait()
+                print (p.returncode)
+                p= subprocess.Popen("docker start --checkpoint ckfiltering filtering".format(cid), shell=True, stdout=subprocess.PIPE)
+                for line in p.stdout:
+                    print (line)
+                p.wait()
+                print (p.returncode)
+
             #self.buffer += data
             self.is_readable = False  # sth to send back now
-            self.is_writable = False
+            self.is_writable = True
         else:
             log.debug("got null data")
 
@@ -51,6 +69,7 @@ class EchoHandler(asyncore.dispatcher):
         if self.buffer:
             sent = self.send(pickle.dumps(self.buffer))
             log.debug("sent data {0}".format(self.buffer))
+
             self.is_readable = True
             self.is_writable = False
             #self.buffer = {}
