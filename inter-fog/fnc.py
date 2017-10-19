@@ -46,16 +46,20 @@ class EchoHandler(asyncore.dispatcher):
                 #print("FNC - Restore the checkpoint with the command: \n\t docker start --checkpoint ckclient sclient "
                 log.debug("Creating cjheckpint")
                 #['docker ',' checkpoint ',' create ', str(cid), 'ckfiltering']
+
+                start_time = time.time()
                 p= subprocess.Popen("/usr/bin/docker checkpoint create {0} ckfiltering ".format(cid), shell=True, stdout=subprocess.PIPE)
-                for line in p.stdout:
-                    print (line)
+                # for line in p.stdout:
+                #     print (line)
                 p.wait()
                 log.debug("returned code "+str(p.returncode))
-                p= subprocess.Popen("/usr/bin/docker start --checkpoint ckfiltering filtering".format(cid), shell=True, stdout=subprocess.PIPE)
-                for line in p.stdout:
-                    print (line)
+                p = subprocess.Popen("/usr/bin/docker start --checkpoint ckfiltering filtering".format(cid), shell=True, stdout=subprocess.PIPE)
+                # for line in p.stdout:
+                #     print (line)
                 p.wait()
-                print (p.returncode)
+
+                log.info("Chekout + restore time {}".format(time.time() - start_time))
+
 
             #self.buffer += data
             self.is_readable = False  # sth to send back now
@@ -64,7 +68,7 @@ class EchoHandler(asyncore.dispatcher):
             log.debug("got null data")
 
     def handle_write(self):
-        time.sleep(3)
+        time.sleep(5)
         log.debug("handle_write")
         if self.buffer:
             sent = self.send(pickle.dumps(self.buffer))

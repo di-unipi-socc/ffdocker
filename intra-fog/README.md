@@ -11,16 +11,20 @@ The experiment is composed by the following part:
 
 
 Run the *fnc* contianer:
-`docker run      \
+```
+docker run      \
   -v /tmp/:/tmp/  \
   -v /var/run/docker.sock:/var/run/docker.sock   \
-  diunipisocc/fnc`
+  diunipisocc/fnc
+  ```
 
 
 Run the *app* container:
-`docker run   \
+```
+docker run   \
     -v /tmp/ffsocket.sock:/tmp/ffsocket.sock  \
-    diunipisocc/app`
+    diunipisocc/app
+    ```
 
 <!--
 ### Limit a container's resources in a Fog Node
